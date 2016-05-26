@@ -24,17 +24,18 @@
 
 using namespace v8;
 
-Handle<Value> demangle(const Arguments& args) {
-    String::Utf8Value mangledStr(args[0]->ToString());
+void demangle(const FunctionCallbackInfo<Value> &args) {
+    Isolate *isolate = args.GetIsolate();
+
+    String::Utf8Value mangledStr(args[0]->ToString(isolate));
 
     int status;
     char * demangled = abi::__cxa_demangle(*mangledStr, NULL, NULL, & status);
 
-    HandleScope scope;
     if (demangled) {
-         return scope.Close(String::New(demangled));
+         args.GetReturnValue().Set(String::NewFromUtf8(isolate, demangled));
     } else {
-         return args[0];
+         args.GetReturnValue().Set(args[0]);
     }
 }
 
